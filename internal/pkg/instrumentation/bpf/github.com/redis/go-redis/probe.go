@@ -3,7 +3,7 @@
 
 // Package redis provides an instrumentation probe for database clients using the
 // [database/redis] package.
-package redis
+package go_redis
 
 import (
 	"fmt"
@@ -41,15 +41,15 @@ func New(logger *slog.Logger, version string) probe.Probe {
 			Logger: logger,
 			Consts: []probe.Const{
 				probe.StructFieldConst{
-					Key: "args_pos",
+					Key: "base_cmd_args_pos",
 					ID:  structfield.NewID("github.com/redis/go-redis/v9", "github.com/redis/go-redis/v9", "baseCmd", "args"),
 				},
 				probe.StructFieldConst{
-					Key: "db_opts_pos",
+					Key: "options_db_pos",
 					ID:  structfield.NewID("github.com/redis/go-redis/v9", "github.com/redis/go-redis/v9", "Options", "DB"),
 				},
 				probe.StructFieldConst{
-					Key: "addr_opts_pos",
+					Key: "options_addr_pos",
 					ID:  structfield.NewID("github.com/redis/go-redis/v9", "github.com/redis/go-redis/v9", "Options", "Addr"),
 				},
 			},

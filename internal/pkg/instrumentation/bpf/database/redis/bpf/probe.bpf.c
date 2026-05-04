@@ -13,6 +13,7 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 #define MAX_OPERATION_SIZE 64
 #define MAX_KEY_SIZE 64
 #define MAX_ADDR_LEN 64
+#define MAX_CONCURRENT 50
 
 struct redis_request_t {
     BASE_SPAN_PROPERTIES
@@ -65,7 +66,9 @@ int uprobe_process(struct pt_regs *ctx) {
     struct go_string arg0_string = {};
     bpf_probe_read_user(&arg0_string, sizeof(arg0_string), (void *)arg0.data);
     if (arg0_string.len <= 0 || arg0_string.len > MAX_OPERATION_SIZE) return 0;
-    bpf_probe_read_user(redis_request.operation, arg0_string.len, (void *)arg0_string.str);
+    u64 op_len = arg0_string.len;
+    op_len &= (MAX_OPERATION_SIZE - 1);
+    bpf_probe_read_user(redis_request.operation, op_len, (void *)arg0_string.str);
 
     // step 3, retrieving the second member of the slice, key
     struct go_iface arg1 = {0};
@@ -73,7 +76,9 @@ int uprobe_process(struct pt_regs *ctx) {
     struct go_string arg1_string = {};
     bpf_probe_read_user(&arg1_string, sizeof(arg1_string), (void *)arg1.data);
     if (arg1_string.len == 0 || arg1_string.len > MAX_OPERATION_SIZE) return 0;
-    bpf_probe_read_user(redis_request.key, arg1_string.len, (void *)arg1_string.str);
+    u64 key_len = arg1_string.len;
+    key_len &= (MAX_OPERATION_SIZE - 1);
+    bpf_probe_read_user(redis_request.key, key_len, (void *)arg1_string.str);
 
     // reading values from the client pointer
     void *client_opts_ptr = NULL;
@@ -87,7 +92,9 @@ int uprobe_process(struct pt_regs *ctx) {
     struct go_string address_str = {0};
     bpf_probe_read_user(&address_str, sizeof(address_str), (void*)client_opts_ptr+addr_opts_pos);
     if (address_str.len == 0 || address_str.len > MAX_ADDR_LEN) return 0;
-    bpf_probe_read_user(redis_request.address, address_str.len, address_str.str);
+    u64 addr_len = address_str.len;
+    addr_len &= (MAX_ADDR_LEN - 1);
+    bpf_probe_read_user(redis_request.address, addr_len, address_str.str);
     
     struct go_iface go_context = {0};
     get_Go_context(ctx, 2, 0, true, &go_context);

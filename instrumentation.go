@@ -18,6 +18,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
 
 	"go.opentelemetry.io/auto/internal/pkg/instrumentation"
+	redis "go.opentelemetry.io/auto/internal/pkg/instrumentation/bpf/database/redis"
 	dbSql "go.opentelemetry.io/auto/internal/pkg/instrumentation/bpf/database/sql"
 	kafkaConsumer "go.opentelemetry.io/auto/internal/pkg/instrumentation/bpf/github.com/segmentio/kafka-go/consumer"
 	kafkaProducer "go.opentelemetry.io/auto/internal/pkg/instrumentation/bpf/github.com/segmentio/kafka-go/producer"
@@ -71,6 +72,7 @@ func NewInstrumentation(
 		httpServer.New(c.logger, Version()),
 		httpClient.New(c.logger, Version()),
 		dbSql.New(c.logger, Version()),
+		redis.New(c.logger, Version()),
 		kafkaProducer.New(c.logger, Version()),
 		kafkaConsumer.New(c.logger, Version()),
 		autosdk.New(c.logger),
